@@ -1,6 +1,7 @@
 package jobsim.co.zw.eft_integration.processor.impl;
 
 import jobsim.co.zw.eft_integration.processor.api.POSInitializeProcessor;
+import jobsim.co.zw.eft_integration.processor.api.TcpMessageSenderProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.core.MessagingTemplate;
@@ -32,6 +33,8 @@ public class POSInitializeProcessorImpl  implements POSInitializeProcessor {
 
     private final MessageChannel outputChannel;
 
+    private final TcpMessageSenderProcessor tcpMessageSenderProcessor;
+
     @Override
     public void InitializePos() throws ParserConfigurationException, TransformerException {
 
@@ -55,16 +58,18 @@ public class POSInitializeProcessorImpl  implements POSInitializeProcessor {
         String convertDocumentToString = convertDocumentToString(doc);
         log.info("eft pos Initializing request {}-",convertDocumentToString);
 
-        tcpOutboundGateway.handleMessage(new GenericMessage<>(convertDocumentToString.getBytes()));
+        tcpMessageSenderProcessor.tcpConnect(convertDocumentToString);
 
-        MessagingTemplate messagingTemplate = new MessagingTemplate();
-        org.springframework.messaging.Message<?> response = messagingTemplate.receive(outputChannel);
-
-
-        if (response != null && response.getPayload() instanceof byte[]) {
-            String message= new String((byte[]) response.getPayload());
-           log.info("eft pos Initializing request {}-",message);
-        }
+//        tcpOutboundGateway.handleMessage(new GenericMessage<>(convertDocumentToString.getBytes()));
+//
+//        MessagingTemplate messagingTemplate = new MessagingTemplate();
+//        org.springframework.messaging.Message<?> response = messagingTemplate.receive(outputChannel);
+//
+//
+//        if (response != null && response.getPayload() instanceof byte[]) {
+//            String message= new String((byte[]) response.getPayload());
+//           log.info("eft pos Initializing request {}-",message);
+//        }
 
     }
 
